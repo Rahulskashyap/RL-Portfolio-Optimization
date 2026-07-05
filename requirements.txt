@@ -1,0 +1,8 @@
+@"
+pandas
+numpy
+matplotlib
+gymnasium
+stable-baselines3
+statsmodels
+"@ | Out-File -FilePath requirements.txt -Encoding utf8
