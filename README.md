@@ -1,193 +1,208 @@
+<div align="center">
+
 # RL-Based Portfolio Optimization using PPO and ARIMA
 
-## Project Overview
+Reinforcement learning meets time-series forecasting for dynamic stock portfolio allocation.
 
-This project presents a Reinforcement Learning-based approach for portfolio optimization using Proximal Policy Optimization (PPO) combined with the ARIMA time-series forecasting model.
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+![Stable--Baselines3](https://img.shields.io/badge/Stable--Baselines3-PPO-orange)
+![Gymnasium](https://img.shields.io/badge/Gymnasium-Custom%20Env-green)
+![Statsmodels](https://img.shields.io/badge/Statsmodels-ARIMA-yellow)
+![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
-The main objective of the project is to dynamically allocate investments between selected stocks based on historical market data and predicted price information.
+</div>
 
-The project uses historical stock market data of Reliance Industries and Tata Consultancy Services (TCS).
+---
 
-ARIMA is used to generate predicted stock price information, while the PPO reinforcement learning agent learns an investment allocation strategy by interacting with a custom stock market environment.
+## Table of contents
 
-The performance of the reinforcement learning model is compared with an equal-weight baseline portfolio.
+- [Overview](#overview)
+- [Problem statement](#problem-statement)
+- [Architecture](#architecture)
+- [Tech stack](#tech-stack)
+- [Folder structure](#folder-structure)
+- [Dataset](#dataset)
+- [Methodology](#methodology)
+- [Results](#results)
+- [Limitations](#limitations)
+- [Future scope](#future-scope)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Requirements](#requirements)
+- [Contributors](#contributors)
+- [References](#references)
+- [License](#license)
 
-## Problem Statement
+---
 
-Traditional portfolio allocation strategies often use fixed investment rules and may not adapt effectively to changing market conditions.
+## Overview
 
-The objective of this project is to develop an intelligent portfolio optimization system that dynamically adjusts asset allocation using reinforcement learning.
+This project presents a reinforcement learning approach for portfolio optimization, combining **Proximal Policy Optimization (PPO)** with **ARIMA** time-series forecasting.
 
-The system aims to study whether a PPO-based reinforcement learning agent, enhanced with ARIMA-generated predictive features, can perform better than a simple equal-weight baseline strategy.
+The goal is to dynamically allocate investments between two stocks — **Reliance Industries** and **Tata Consultancy Services (TCS)** — using historical market data and ARIMA-predicted price information as input to a reinforcement learning agent.
 
-## Technologies Used
+ARIMA generates a predictive price feature, which is fed into a custom Gymnasium environment. A PPO agent then learns an allocation policy by interacting with this environment, and its performance is benchmarked against a simple equal-weight baseline portfolio.
 
-- Python
-- Jupyter Notebook
-- NumPy
-- Pandas
-- Matplotlib
-- Gymnasium
-- Stable-Baselines3
-- Proximal Policy Optimization (PPO)
-- ARIMA
-- Statsmodels
-- Git
-- GitHub
+In short: **ARIMA predicts, and PPO decides.**
+
+## Problem statement
+
+Traditional portfolio allocation strategies typically rely on fixed rules and don't adapt well to changing market conditions.
+
+This project explores whether a PPO-based reinforcement learning agent, enhanced with ARIMA-generated predictive features, can outperform a static equal-weight allocation strategy — and by how much.
+
+## Architecture
+
+The pipeline below shows how data flows from raw stock prices through forecasting, the RL environment, and finally into a head-to-head comparison with the baseline.
+
+![Architecture diagram](images/architecture.svg)
+
+## Tech stack
+
+| Category | Tools |
+|---|---|
+| Language | Python 3.12 |
+| Data handling | Pandas, NumPy |
+| Visualization | Matplotlib |
+| RL framework | Gymnasium, Stable-Baselines3 (PPO) |
+| Forecasting | Statsmodels (ARIMA) |
+| Environment | Jupyter Notebook |
+| Version control | Git, GitHub |
+
+## Folder structure
+
+```
+RL-Portfolio-Optimization/
+├── images/
+│   ├── architecture.png
+│   ├── portfolio_growth_rl.png
+│   ├── rl_vs_baseline.png
+│   └── arima_forecast_vs_actual.png
+├── RL_Portfolio_Optimization.ipynb
+├── Quote-Equity-RELIANCE-EQ-24-03-2026-24-04-2026.csv
+├── Quote-Equity-TCS-EQ-24-03-2026-24-04-2026.csv
+├── RL Design Document.pptx
+├── RL ppt.pptx
+├── requirements.txt
+├── LICENSE
+├── .gitignore
+└── README.md
+```
 
 ## Dataset
 
-The project uses historical stock price datasets for:
+The project uses historical daily price data for Reliance Industries and TCS, covering the period 24-Mar-2026 to 24-Apr-2026.
 
-- Reliance Industries
-- Tata Consultancy Services (TCS)
+| Column | Description |
+|---|---|
+| DATE | Trading date |
+| OPEN | Opening price |
+| HIGH | Highest price of the day |
+| LOW | Lowest price of the day |
+| CLOSE | Closing price (used for modeling) |
+| VWAP | Volume-weighted average price |
+| VOLUME | Shares traded |
 
-The datasets are stored in CSV format.
+Only the `CLOSE` price is used for modeling — it's cleaned, converted to numeric, and merged into a single working dataset indexed by trading day.
 
-The stock data includes attributes such as:
+## Methodology
 
-- Date
-- Open Price
-- High Price
-- Low Price
-- Previous Close
-- Last Traded Price
-- Other historical market information
+1. **Data collection** — Historical CLOSE prices for both stocks are loaded from CSV.
+2. **Preprocessing** — Values are cleaned, converted to numeric, and missing data is handled.
+3. **ARIMA forecasting** — An ARIMA(3,1,0) model is fit on Reliance's price series and generates a one-step-ahead predicted price (`REL_PRED`), which becomes part of the RL state.
 
-For portfolio optimization, the relevant stock price information is extracted, cleaned, and converted into numerical format.
+   ![ARIMA forecast vs actual](images/arima_forecast_vs_actual.png)
 
-## Project Methodology
+4. **Custom RL environment** — A Gymnasium environment models the portfolio, where:
+   - **State**: current prices + ARIMA-predicted price
+   - **Action**: portfolio allocation weights
+   - **Reward**: portfolio return
+5. **PPO training** — A PPO agent (Stable-Baselines3) learns an allocation policy through repeated interaction with the environment.
+6. **Baseline comparison** — A static 50/50 equal-weight portfolio serves as the benchmark for evaluating whether the learned policy adds value.
 
-The project follows the pipeline:
+## Results
 
-Stock Market Data → Data Preprocessing → ARIMA Forecasting → Custom Gymnasium Environment → PPO Agent Training → Portfolio Evaluation → Baseline Comparison
+![RL vs baseline performance](images/rl_vs_baseline.png)
 
-### 1. Data Collection
+![RL portfolio growth](images/portfolio_growth_rl.png)
 
-Historical stock market data for Reliance Industries and TCS is collected and stored in CSV format.
+| Metric | RL (PPO + ARIMA) | Baseline (equal-weight) |
+|---|---|---|
+| Sharpe ratio | 0.295 | 0.123 |
+| Annualized return | 291% | 54% |
 
-### 2. Data Preprocessing
-
-The datasets are cleaned and processed before model training.
-
-The preprocessing steps include:
-
-- Loading CSV datasets
-- Extracting relevant stock price information
-- Converting values into numerical format
-- Handling missing values
-- Preparing the final dataset
-
-### 3. ARIMA Forecasting
-
-The ARIMA time-series model is used to generate predicted stock price information.
-
-The ARIMA-generated prediction is added as an additional feature to the state representation of the reinforcement learning environment.
-
-In simple terms:
-
-ARIMA predicts, and PPO decides.
-
-### 4. Custom Reinforcement Learning Environment
-
-A custom portfolio environment is developed using Gymnasium.
-
-The reinforcement learning problem consists of:
-
-- Agent: PPO model
-- Environment: Simulated stock market environment
-- State: Current stock market information and ARIMA-generated predictive feature
-- Action: Portfolio allocation decisions
-- Reward: Portfolio performance based on investment returns
-
-### 5. PPO Model
-
-Proximal Policy Optimization (PPO) is used as the reinforcement learning algorithm.
-
-PPO is suitable for this project because portfolio allocation can be represented using a continuous action space.
-
-The PPO agent interacts with the environment and learns an investment allocation policy through reward-based training.
-
-### 6. Baseline Strategy
-
-An equal-weight portfolio strategy is used as the baseline.
-
-In the baseline strategy:
-
-- 50% of the investment is allocated to Reliance
-- 50% of the investment is allocated to TCS
-
-The baseline does not learn or dynamically modify its allocation strategy.
-
-The PPO model is compared with this baseline to evaluate whether reinforcement learning provides improved portfolio decision-making.
-
-## Performance Metrics
-
-The model is evaluated using:
-
-### Portfolio Growth
-
-Portfolio growth represents how the value of the investment changes over the evaluation period.
-
-### Sharpe Ratio
-
-The Sharpe Ratio is used to evaluate risk-adjusted returns.
-
-A higher Sharpe Ratio generally indicates better returns relative to the level of risk taken.
-
-### Annualized Return
-
-Annualized return estimates portfolio performance on a yearly basis.
-
-## RL vs Baseline
-
-The main comparison performed in this project is:
-
-PPO Reinforcement Learning Agent vs Equal-Weight Baseline Portfolio
-
-The baseline maintains fixed portfolio allocation, whereas the PPO agent learns a dynamic allocation strategy through interaction with the environment.
-
-## Project Structure
-
-- `RL_Portfolio_Optimization.ipynb` - Main project implementation
-- Reliance CSV Dataset - Historical Reliance stock data
-- TCS CSV Dataset - Historical TCS stock data
-- Design Document - Project design and methodology
-- Project Presentation - Project presentation slides
-- `.gitignore` - Files excluded from Git tracking
-- `README.md` - Project documentation
+> **Note:** the annualized return figures are extrapolated from a short ~19-day evaluation window, which amplifies short-term movement considerably. These numbers should be read directionally — the RL agent outperforms the baseline over the tested period — rather than as production-scale return expectations. A longer backtest window would be needed before drawing stronger conclusions.
 
 ## Limitations
 
-The current implementation has several limitations:
-
-- The project uses a limited historical dataset
+- Uses a limited historical dataset (~1 month of daily prices)
 - Only two stocks are considered
-- Transaction costs are not included
-- Slippage is not modeled
-- The system does not currently operate using real-time market data
-- Historical performance does not guarantee future market performance
+- Transaction costs and slippage are not modeled
+- No real-time market data integration
+- Historical performance does not guarantee future results
 
-## Future Scope
+## Future scope
 
-The project can be further improved by:
+- Expand to larger historical datasets and longer backtest windows
+- Add more stocks and asset classes
+- Model transaction costs and slippage
+- Introduce explicit risk constraints
+- Compare ARIMA against LSTM or Transformer-based forecasting
+- Perform hyperparameter optimization
+- Implement proper train/validation/test splits
+- Integrate real-time market data
+- Build a portfolio management dashboard
 
-- Using larger historical datasets
-- Adding more stocks and financial assets
-- Including transaction costs and slippage
-- Implementing explicit risk constraints
-- Comparing ARIMA with LSTM and Transformer-based forecasting models
-- Performing hyperparameter optimization
-- Implementing proper train, validation, and test datasets
-- Integrating real-time stock market data
-- Developing a portfolio management dashboard
+## Installation
 
-## Conclusion
+```bash
+# Clone the repository
+git clone https://github.com/Rahulskashyap/RL-Portfolio-Optimization.git
+cd RL-Portfolio-Optimization
 
-This project demonstrates the application of reinforcement learning to portfolio optimization.
+# Create and activate a virtual environment
+python -m venv .venv
+.venv\Scripts\activate      # Windows
+source .venv/bin/activate   # macOS / Linux
 
-ARIMA is used to generate predictive time-series information, while the PPO agent learns dynamic portfolio allocation decisions through interaction with a custom Gymnasium environment.
+# Install dependencies
+pip install -r requirements.txt
+```
 
-The project evaluates the reinforcement learning approach by comparing its portfolio performance with an equal-weight baseline strategy using financial performance metrics.
+## Usage
 
-This implementation serves as a research and educational prototype for studying the application of reinforcement learning and time-series forecasting in financial portfolio optimization.
+1. Open `RL_Portfolio_Optimization.ipynb` in Jupyter or VS Code.
+2. Ensure the two CSV files are in the same folder as the notebook.
+3. Run all cells top to bottom (Kernel → Restart and Run All).
+4. Generated charts will be saved automatically to the project folder.
+
+## Requirements
+
+See [`requirements.txt`](requirements.txt) for the full list of dependencies:
+
+```
+pandas
+numpy
+matplotlib
+gymnasium
+stable-baselines3
+statsmodels
+```
+
+## Contributors
+
+| Name | GitHub |
+|---|---|
+| Rahul Kashyap | [@Rahulskashyap](https://github.com/Rahulskashyap) |
+| Tharun | [@Tharunnxx](https://github.com/Tharunnxx) |
+
+## References
+
+- [Proximal Policy Optimization (Schulman et al., 2017)](https://arxiv.org/abs/1707.06347)
+- [Stable-Baselines3 documentation](https://stable-baselines3.readthedocs.io/)
+- [Gymnasium documentation](https://gymnasium.farama.org/)
+- [Statsmodels ARIMA documentation](https://www.statsmodels.org/stable/generated/statsmodels.tsa.arima.model.ARIMA.html)
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
