@@ -74,7 +74,7 @@ The pipeline below shows how data flows from raw stock prices through forecastin
 ```
 RL-Portfolio-Optimization/
 ├── images/
-│   ├── architecture.png
+│   ├── architecture.svg
 │   ├── portfolio_growth_rl.png
 │   ├── rl_vs_baseline.png
 │   └── arima_forecast_vs_actual.png
@@ -194,7 +194,7 @@ statsmodels
 | Name | GitHub |
 |---|---|
 | Rahul Kashyap | [@Rahulskashyap](https://github.com/Rahulskashyap) |
-| Tharun | [@Tharunnxx](https://github.com/Tharunnxx) |
+| Tharun C | [@Tharunnxx](https://github.com/Tharunnxx) |
 
 ## References
 
